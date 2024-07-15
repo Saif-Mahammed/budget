@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced Budget Generator</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "JetBrains Mono", monospace;
+        background-color: #121212;
+        color: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .container {
+        width: 90%;
+        max-width: 600px;
+        background-color: #1e1e1e;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 14px;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #333;
+        color: #fff;
+        font-size: 14px;
+      }
+
+      .dropdown {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+      }
+
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #333;
+        min-width: 100%;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+        border-radius: 5px;
+      }
+
+      .dropdown-content div {
+        color: white;
+        padding: 12px 16px;
+        cursor: pointer;
+      }
+
+      .dropdown-content div:hover {
+        background-color: #575757;
+      }
+
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 5px;
+        background-color: #6200ea;
+        color: #fff;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 10px;
+      }
+
+      button:hover {
+        background-color: #3700b3;
+      }
+
+      #budget-result {
+        margin-top: 20px;
+        background-color: #333;
+        padding: 20px;
+        border-radius: 5px;
+        display: none;
+      }
+
+      #budget-result h3,
+      #budget-result p,
+      #budget-result table {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 8px 12px;
+        border: 1px solid #575757;
+      }
+
+      th {
+        background-color: #444;
+      }
+
+      td {
+        background-color: #555;
+      }
+
+      .copy-btn {
+        background-color: #00bfa5;
+        margin-top: 10px;
+      }
+
+      .copy-btn:hover {
+        background-color: #008c74;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Advanced Budget Generator</h1>
+      <form id="budget-form">
+        <div class="form-group">
+          <label for="time-period">Time Period:</label>
+          <select id="time-period" required>
+            <option value="" disabled selected>Select time period</option>
+            <option value="day">Day</option>
+            <option value="week">Week</option>
+            <option value="month">Month</option>
+            <option value="year">Year</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="amount">Total Amount:</label>
+          <input
+            type="number"
+            id="amount"
+            placeholder="Enter total amount"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="currency">Currency:</label>
+          <div class="dropdown">
+            <input
+              type="text"
+              id="currency"
+              placeholder="Search currency"
+              required
+            />
+            <div id="currency-dropdown" class="dropdown-content"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="description">Description:</label>
+          <input
+            type="text"
+            id="description"
+            placeholder="Enter description"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="categories">Categories (comma-separated):</label>
+          <input
+            type="text"
+            id="categories"
+            placeholder="e.g., food, rent, utilities"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="products">Products (comma-separated):</label>
+          <input
+            type="text"
+            id="products"
+            placeholder="e.g., laptop, phone, books"
+            required
+          />
+        </div>
+        <button type="submit">Generate Budget</button>
+      </form>
+      <div id="budget-result"></div>
+      <button id="copy-btn" class="copy-btn" onclick="copyBudget()">
+        Copy Budget
+      </button>
+    </div>
+    <script>
+      const currencyInput = document.getElementById("currency");
+      const currencyDropdown = document.getElementById("currency-dropdown");
+      const currencies = [
+        "USD",
+        "EUR",
+        "GBP",
+        "INR",
+        "JPY",
+        "CNY",
+        "AUD",
+        "CAD",
+        "CHF",
+        "SGD",
+        "HKD",
+        "SEK",
+        "KRW",
+        "NZD",
+        "ZAR",
+        "RUB",
+        "BRL",
+        "TWD",
+        "PLN",
+        "THB",
+        "IDR",
+        "HUF",
+        "CZK",
+        "ILS",
+        "CLP",
+        "PHP",
+        "PKR",
+        "MYR",
+        "NOK",
+        "DKK",
+        "AED",
+        "SAR",
+        "QAR",
+        "KWD",
+        "BHD",
+        "OMR",
+        "VND",
+      ];
+
+      currencyInput.addEventListener("input", function () {
+        const value = currencyInput.value.toUpperCase();
+        currencyDropdown.innerHTML = "";
+        currencies.forEach((currency) => {
+          if (currency.startsWith(value)) {
+            const div = document.createElement("div");
+            div.textContent = currency;
+            div.addEventListener("click", () => {
+              currencyInput.value = currency;
+              currencyDropdown.innerHTML = "";
+            });
+            currencyDropdown.appendChild(div);
+          }
+        });
+      });
+
+      document
+        .getElementById("budget-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const timePeriod = document.getElementById("time-period").value;
+          const amount = Math.floor(
+            parseFloat(document.getElementById("amount").value)
+          );
+          const currency = document.getElementById("currency").value;
+          const description = document.getElementById("description").value;
+          const categories = document
+            .getElementById("categories")
+            .value.split(",")
+            .map((cat) => cat.trim());
+          const products = document
+            .getElementById("products")
+            .value.split(",")
+            .map((prod) => prod.trim());
+
+          if (
+            timePeriod &&
+            amount &&
+            currency &&
+            description &&
+            categories.length &&
+            products.length
+          ) {
+            generateBudget(
+              timePeriod,
+              amount,
+              currency,
+              description,
+              categories,
+              products
+            );
+          }
+        });
+
+      function generateBudget(
+        timePeriod,
+        amount,
+        currency,
+        description,
+        categories,
+        products
+      ) {
+        const budgetResult = document.getElementById("budget-result");
+
+        const timePeriodText = document.createElement("h3");
+        timePeriodText.textContent = `Time Period: ${timePeriod}`;
+
+        const amountText = document.createElement("p");
+        amountText.textContent = `Total Amount: ${amount} ${currency}`;
+
+        const descriptionText = document.createElement("p");
+        descriptionText.textContent = `Description: ${description}`;
+
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        const tbody = document.createElement("tbody");
+
+        const headerRow = document.createElement("tr");
+        const headers = ["Category/Product", "Amount"];
+        headers.forEach((header) => {
+          const th = document.createElement("th");
+          th.textContent = header;
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+
+        categories.forEach((category) => {
+          const row = document.createElement("tr");
+          const categoryCell = document.createElement("td");
+          categoryCell.textContent = category;
+          const amountCell = document.createElement("td");
+          amountCell.textContent = `${optimizeBudget(
+            timePeriod,
+            amount,
+            categories.length
+          )} ${currency}`;
+          row.appendChild(categoryCell);
+          row.appendChild(amountCell);
+          tbody.appendChild(row);
+        });
+
+        products.forEach((product) => {
+          const row = document.createElement("tr");
+          const productCell = document.createElement("td");
+          productCell.textContent = product;
+          const amountCell = document.createElement("td");
+          amountCell.textContent = `${optimizeBudget(
+            timePeriod,
+            amount,
+            products.length
+          )} ${currency}`;
+          row.appendChild(productCell);
+          row.appendChild(amountCell);
+          tbody.appendChild(row);
+        });
+
+        table.appendChild(thead);
+        table.appendChild(tbody);
+
+        const detailsText = document.createElement("p");
+        detailsText.textContent = generateDetails(timePeriod, amount, currency);
+
+        budgetResult.innerHTML = "";
+        budgetResult.appendChild(timePeriodText);
+        budgetResult.appendChild(amountText);
+        budgetResult.appendChild(descriptionText);
+        budgetResult.appendChild(table);
+        budgetResult.appendChild(detailsText);
+
+        budgetResult.style.display = "block";
+      }
+
+      function optimizeBudget(timePeriod, amount, itemCount) {
+        let dailyAmount;
+        switch (timePeriod.toLowerCase()) {
+          case "day":
+            dailyAmount = amount;
+            break;
+          case "week":
+            dailyAmount = amount / 7;
+            break;
+          case "month":
+            dailyAmount = amount / 30;
+            break;
+          case "year":
+            dailyAmount = amount / 365;
+            break;
+          default:
+            dailyAmount = amount / 30;
+            break;
+        }
+        const optimizedAmount = Math.floor(dailyAmount * itemCount);
+        return optimizedAmount;
+      }
+
+      function generateDetails(timePeriod, amount, currency) {
+        let details = "";
+
+        switch (timePeriod.toLowerCase()) {
+          case "day":
+            details = `This budget covers a day. You should spend ${amount} ${currency} per day to stay within the budget.`;
+            break;
+          case "week":
+            details = `This budget covers a week. You should spend ${Math.floor(
+              amount / 7
+            )} ${currency} per day to stay within the budget.`;
+            break;
+          case "month":
+            details = `This budget covers a month. You should spend ${Math.floor(
+              amount / 30
+            )} ${currency} per day to stay within the budget.`;
+            break;
+          case "year":
+            details = `This budget covers a year. You should spend ${Math.floor(
+              amount / 365
+            )} ${currency} per day to stay within the budget.`;
+            break;
+          default:
+            details =
+              "Custom time period. Adjust your daily spending accordingly.";
+            break;
+        }
+
+        return details;
+      }
+
+      function copyBudget() {
+        const budgetResult = document.getElementById("budget-result");
+        const range = document.createRange();
+        range.selectNodeContents(budgetResult);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        document.execCommand("copy");
+        alert("Budget copied to clipboard!");
+      }
+    </script>
+  </body>
+</html>
